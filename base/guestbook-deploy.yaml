@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guestbook-simple
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: guestbook-simple
+  template:
+    metadata:
+      labels:
+        app: guestbook-simple
+    spec:
+      containers:
+      - image: ghcr.io/akuity/guestbook:latest
+        name: guestbook-simple
+        ports:
+        - name: http
+          containerPort: 3000

@@ -1,0 +1,7 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Project
+metadata:
+  name: kargo-simple
+  annotations:
+    # This annotation ensures Projects (Namespaces) are created first when deployed via Argo CD
+    argocd.argoproj.io/sync-wave: "-1"
