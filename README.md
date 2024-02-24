@@ -2,7 +2,7 @@
 
 This is an example GitOps repository for simple Kargo example for getting started.
 
-Features:
+### Features:
 * A Warehouse which monitors a container repository for new images
 * Three Stages (dev, staging, prod)
 
@@ -12,41 +12,56 @@ that deploys manifest changes from a path in a git repo automatically.
 
 ## Instructions
 
-1. Fork this repo
-2. Run `personalize.sh` to customize the repo with your username
-3. Commit the changes
-4. Create a guestbook container repository
+1. Fork this repo, then clone it locally (from your fork).
+2. Run the `personalize.sh` to customize the manifests to use your GitHub username.
+```
+./personalize.sh <yourgithubusername>
+```
+3. `git commit` the personalized changes
+```
+git commit -a -m "personalize manifests"
+```
+4. Create a guestbook container repository in your GitHub account. The easiest way to create a new ghcr.io repository, is by retagging/pushing an existing image with your github username:
 
 ```
-docker buildx imagetools create -t ghcr.io/<yourusername>/guestbook:v0.0.1 ghcr.io/akuity/guestbook:latest
+docker buildx imagetools create \
+    ghcr.io/akuity/guestbook:latest \
+    -t ghcr.io/<yourgithubusername>/guestbook:v0.0.1
 ```
 
-5. Mark the container repository public
+5. You will now have a `guestbook` container repository. Navigate to the "guestbook" container repository and change the visibility of the package to public. This will allow Kargo to monitor this repository for new images, without configuring credentials.
 
-6. Login to kargo
+![image](docs/change-package-visibility.png)
+
+6. Download the latest CLI from [Kargo Releases](https://github.com/akuity/kargo/releases)
+7. Login to kargo
+
 ```
 kargo login https://<kargo-url> --admin
 ```
 
-7. Apply the Kargo manifests
+8. Apply the Kargo manifests
 
 ```
 kargo apply -f ./kargo
 ```
 
-8. Add a PAT to Kargo that can write to the git repository. Modify the `username` and `password` 
-fields of github-creds.yaml. Then apply the Secret:
+9. Add a GitHub PAT to Kargo. In these examples, the PAT must be able to write to your git repository, as well as open pull requests, as as part of promotion.
+Modify the `username` and `password`  fields of `github-creds.yaml`. Then apply the Secret. 
 
 ```
 # edit github-creds.yaml
 kargo apply -f ./github-creds.yaml
 ```
 
-
 ## Simulating a release
 
 To simulate a release, simply retag an image with a newer semantic version. e.g.:
 
 ```
-docker buildx imagetools create -t ghcr.io/<yourusername>/guestbook:v0.0.2 ghcr.io/akuity/guestbook:latest
+docker buildx imagetools create \
+    ghcr.io/akuity/guestbook:latest \
+    -t ghcr.io/<yourgithubusername>/guestbook:v0.0.2
 ```
+
+Then refresh the Warehouse in the UI to detect the new Freight.

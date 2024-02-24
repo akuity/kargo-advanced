@@ -6,5 +6,5 @@ if [ -z "$1" ]
     exit 1
 fi
 
-find . -type f -name '*.yaml' -exec sed -i '' s#https://github.com/akuity#https://github.com/${1}#g {} +
-find . -type f -name '*.yaml' -exec sed -i '' s#ghcr.io/akuity#ghcr.io/${1}#g {} +
+find . -type f -name '*.yaml' -exec sed -E -i '' s#https://github.com/[-_a-zA-Z0-9]+#https://github.com/${1}#g {} +
+find . -type f -name '*.yaml' -exec sed -E -i '' s#ghcr.io/[-_a-zA-Z0-9]+#ghcr.io/${1}#g {} +

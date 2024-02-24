@@ -7,3 +7,4 @@ spec:
   subscriptions:
   - image:
       repoURL: ghcr.io/akuity/guestbook
+      tagSelectionStrategy: SemVer
