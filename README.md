@@ -6,8 +6,7 @@ This is an example GitOps repository for simple Kargo example for getting starte
 * A Warehouse which monitors a container repository for new images
 * Three Stages (dev, staging, prod)
 
-It does not require an Argo CD instance and so could work with any GitOps operator (Argo CD, Flux)
-that deploys manifest changes from a path in a git repo automatically.
+It does not require an Argo CD instance and so would work with any GitOps operator (Argo CD, Flux) that detects and deploys manifest changes from a path in a git repo automatically (e.g. using auto-sync).
 
 
 ## Instructions
@@ -46,7 +45,7 @@ kargo login https://<kargo-url> --admin
 kargo apply -f ./kargo
 ```
 
-9. Add a GitHub PAT to Kargo. In these examples, the PAT must be able to write to your git repository, as well as open pull requests, as as part of promotion.
+9. Add a GitHub PAT to Kargo. In these examples, the PAT must be able to write to your git repository, as well as open pull requests, as part of promotion.
 Modify the `username` and `password`  fields of `github-creds.yaml`. Then apply the Secret. 
 
 ```
