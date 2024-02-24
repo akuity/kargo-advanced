@@ -76,9 +76,7 @@ kargo apply -f ./kargo
 
 10. Promtote the image!
 
-You are now configured a Warehouse monitoring your guestbook container image repository, and a three-stage deploy pipeline
-
-Visit the `kargo-simple` Project in the Kargo UI to see the deploy pipeline.
+You now have a Kargo Pipeline which promotes images from the guestbook container image repository, through a three-stage deploy pipeline. Visit the `kargo-simple` Project in the Kargo UI to see the deploy pipeline.
 
 ![pipeline](docs/pipeline.png)
 
