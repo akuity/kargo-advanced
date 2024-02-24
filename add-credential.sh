@@ -1,10 +1,18 @@
 #!/bin/bash
 
-if [ -z "$1" ]
-  then
-    echo "./personalize.sh <username>"
-    exit 1
-fi
+set -e
 
-find . -type f -name '*.yaml' -exec sed -E -i '' s#https://github.com/[-_a-zA-Z0-9]+#https://github.com/${1}#g {} +
-find . -type f -name '*.yaml' -exec sed -E -i '' s#ghcr.io/[-_a-zA-Z0-9]+#ghcr.io/${1}#g {} +
+repo=$(grep "url:" github-creds.yaml | awk '{print $2}')
+
+echo "Configuring credentials for $repo"
+echo -n "Username: "
+read username
+echo -n "Password: "
+read -s password
+
+tempfile="$(mktemp)"
+trap "rm -f ${tempfile}" EXIT
+
+cat ./github-creds.yaml | sed -E "s/username: .*/username: $username/" | sed -E "s/password: .*/password: $password/" > $tempfile
+
+kargo apply -f $tempfile
