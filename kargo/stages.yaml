@@ -57,5 +57,5 @@ spec:
       kustomize:
         images:
         - image: ghcr.io/akuity/guestbook
-          path: env/staging
+          path: env/prod
       pullRequest: {}
