@@ -3,11 +3,11 @@ kind: Secret
 type: Opaque
 metadata:
   name: github-creds
-  namespace: kargo-simple
+  namespace: kargo-advanced
   labels:
     kargo.akuity.io/secret-type: repository
 stringData:
   type: git
-  url: https://github.com/akuity/kargo-simple.git
+  url: https://github.com/akuity/kargo-advanced.git
   username: username
   password: github_pat_REPLACEME

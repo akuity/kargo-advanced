@@ -1,0 +1,25 @@
+# This is a Job based AnalysisTemplate that will succeed or fail depending on
+# if the `succeed` argument is set to `true` or `false` respectively.
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: test
+  namespace: kargo-advanced
+spec:
+  args:
+  - name: succeed
+    value: "true"
+  metrics:
+  - name: test
+    provider:
+      job:
+        spec:
+          backoffLimit: 1
+          template:
+            spec:
+              containers:
+              - name: test
+                image: alpine:latest
+                command: [sh, -c]
+                args: ["sleep 30; exit {{ args.succeed == 'false' ? 1 : 0}}"]
+              restartPolicy: Never

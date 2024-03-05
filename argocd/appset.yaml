@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: guestbook
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      repoURL: https://github.com/akuity/kargo-advanced.git
+      revision: HEAD
+      directories:
+      - path: env/*
+  template:
+    metadata:
+      name: guestbook-{{path.basename}}
+      annotations:
+        kargo.akuity.io/authorized-stage: kargo-advanced:*
+    spec:
+      destination:
+        namespace: guestbook-{{path.basename}}
+        # Replace name with the cluster name:
+        name: demo
+      project: guestbook
+      source:
+        path: app # default render path
+        repoURL: https://github.com/akuity/kargo-advanced.git
+        targetRevision: env/{{path.basename}}

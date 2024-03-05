@@ -1,16 +1,15 @@
-# Kargo Simple Example
+# Kargo Advanced Example
 
-This is a GitOps repository of a simple Kargo example for getting started.
+This is a GitOps repository of an Kargo example that showcases advanced Kargo techniques and features.
 
-### Features:
-* A Warehouse which monitors a container repository for new images
-* Three Stage (dev, staging, prod) deploy pipeline
-* Image tag promotion
-* Direct git commits to dev, staging
-* Pull request for promotion to prod
-
-This example does not require an Argo CD instance and so would work with any GitOps operator (Argo CD, Flux) that detects and deploys manifest changes from a path in a git repo automatically (e.g. using auto-sync).
-
+### Features
+* A Warehouse which monitors both a container repository for new images and manifest changes in git
+* Eight Stage deploy pipeline
+* Git + Image tag promotion
+* Verification using Analysis 
+* Argo CD application syncing
+* Control flow stage
+* Rendered Branches
 
 ## Instructions
 
@@ -44,23 +43,36 @@ In the GitHub UI, navigate to the "guestbook" container repository, Package sett
 
 ![change-package-visibility](docs/change-package-visibility.png)
 
-6. Download and install the latest CLI from [Kargo Releases](https://github.com/akuity/kargo/releases)
+6. Download and install the latest CLI from [Kargo Releases](https://github.com/akuity/kargo/releases) and Argo CD:
 
 ```
 ./download-cli.sh /usr/local/bin/kargo
+
 ```
 
-7. Login to kargo
+7. Login to Kargo
 
 ```
 kargo login https://<kargo-url> --admin
 ```
 
-8. Add git repository credentials to Kargo.
+8. Login to Argo CD
+
+```
+argocd login <argocd-hostname>
+```
+
+8. Apply the Kargo manifests
+
+```
+kargo apply -f ./kargo
+```
+
+9. Add git repository credentials to Kargo.
 
 ```
 $ ./add-credential.sh
-Configuring credentials for https://github.com/akuity/kargo-simple.git
+Configuring credentials for https://github.com/akuity/kargo-advanced.git
 Username: yourgithubusername
 Password: <github PAT>
 ```
@@ -68,15 +80,9 @@ Password: <github PAT>
 As part of the promotion process, Kargo requires privileges to commit changes to your git repository, as well as the ability to create pull requests. Ensure that the given token has these privileges.
 
 
-9. Apply the Kargo manifests
-
-```
-kargo apply -f ./kargo
-```
-
 10. Promtote the image!
 
-You now have a Kargo Pipeline which promotes images from the guestbook container image repository, through a three-stage deploy pipeline. Visit the `kargo-simple` Project in the Kargo UI to see the deploy pipeline.
+You now have a Kargo Pipeline which promotes images from the guestbook container image repository, through a three-stage deploy pipeline. Visit the `kargo-advanced` Project in the Kargo UI to see the deploy pipeline.
 
 ![pipeline](docs/pipeline.png)
 

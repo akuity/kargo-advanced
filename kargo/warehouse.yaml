@@ -2,9 +2,13 @@ apiVersion: kargo.akuity.io/v1alpha1
 kind: Warehouse
 metadata:
   name: guestbook
-  namespace: kargo-simple
+  namespace: kargo-advanced
 spec:
   subscriptions:
   - image:
       repoURL: ghcr.io/akuity/guestbook
       tagSelectionStrategy: SemVer
+      allowTags: ^v?[0-9]+\.[0-9]+\.[0-9]+([\+-].*)?$
+  - git:
+      repoURL: https://github.com/akuity/kargo-advanced.git
+      branch: main

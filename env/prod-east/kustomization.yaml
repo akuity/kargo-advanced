@@ -4,7 +4,7 @@ kind: Kustomization
 resources:
 - ../../base
 
-namespace: guestbook-staging
+namespace: guestbook-prod-east
 
 images:
 - name: ghcr.io/akuity/guestbook

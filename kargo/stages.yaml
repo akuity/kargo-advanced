@@ -2,7 +2,7 @@ apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
 metadata:
   name: dev
-  namespace: kargo-simple
+  namespace: kargo-advanced
   annotations:
     kargo.akuity.io/color: red
 spec:
@@ -10,19 +10,21 @@ spec:
     warehouse: guestbook
   promotionMechanisms:
     gitRepoUpdates:
-    - repoURL: https://github.com/akuity/kargo-simple.git
-      writeBranch: main
-      kustomize:
-        images:
-        - image: ghcr.io/akuity/guestbook
-          path: env/dev
+    - repoURL: https://github.com/akuity/kargo-advanced.git
+      writeBranch: env/dev
+      render: {}
+    argoCDAppUpdates:
+    - appName: guestbook-dev
+  verification:
+    analysisTemplates:
+    - name: test
 
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
 metadata:
   name: staging
-  namespace: kargo-simple
+  namespace: kargo-advanced
   annotations:
     kargo.akuity.io/color: amber
 spec:
@@ -31,31 +33,127 @@ spec:
       - name: dev
   promotionMechanisms:
     gitRepoUpdates:
-    - repoURL: https://github.com/akuity/kargo-simple.git
-      writeBranch: main
-      kustomize:
-        images:
-        - image: ghcr.io/akuity/guestbook
-          path: env/staging
+    - repoURL: https://github.com/akuity/kargo-advanced.git
+      writeBranch: env/staging
+      render: {}
+    argoCDAppUpdates:
+    - appName: guestbook-staging
 
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
 metadata:
-  name: prod
-  namespace: kargo-simple
+  name: ab-test-a
+  namespace: kargo-advanced
   annotations:
-    kargo.akuity.io/color: violet
+    kargo.akuity.io/color: yellow
 spec:
   subscriptions:
     upstreamStages:
       - name: staging
   promotionMechanisms:
     gitRepoUpdates:
-    - repoURL: https://github.com/akuity/kargo-simple.git
-      writeBranch: main
-      kustomize:
-        images:
-        - image: ghcr.io/akuity/guestbook
-          path: env/prod
-      pullRequest: {}
+    - repoURL: https://github.com/akuity/kargo-advanced.git
+      writeBranch: env/ab-test-a
+      render: {}
+  verification:
+    analysisTemplates:
+    - name: test
+
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: ab-test-b
+  namespace: kargo-advanced
+  annotations:
+    kargo.akuity.io/color: green
+spec:
+  subscriptions:
+    upstreamStages:
+      - name: staging
+  promotionMechanisms:
+    gitRepoUpdates:
+    - repoURL: https://github.com/akuity/kargo-advanced.git
+      writeBranch: env/ab-test-b
+      render: {}
+  verification:
+    analysisTemplates:
+    - name: test
+    args:
+    - name: succeed
+      value: "false"
+
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: prod
+  namespace: kargo-advanced
+  annotations:
+    kargo.akuity.io/color: blue
+spec:
+  subscriptions:
+    upstreamStages:
+      - name: ab-test-a
+      - name: ab-test-b
+
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: prod-west
+  namespace: kargo-advanced
+  annotations:
+    kargo.akuity.io/color: violet
+spec:
+  subscriptions:
+    upstreamStages:
+      - name: prod
+  promotionMechanisms:
+    gitRepoUpdates:
+    - repoURL: https://github.com/akuity/kargo-advanced.git
+      writeBranch: env/prod-west
+      render: {}
+    argoCDAppUpdates:
+    - appName: guestbook-prod-west
+
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: prod-central
+  namespace: kargo-advanced
+  annotations:
+    kargo.akuity.io/color: violet
+spec:
+  subscriptions:
+    upstreamStages:
+      - name: prod
+  promotionMechanisms:
+    gitRepoUpdates:
+    - repoURL: https://github.com/akuity/kargo-advanced.git
+      writeBranch: env/prod-central
+      render: {}
+    argoCDAppUpdates:
+    - appName: guestbook-prod-central
+
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: prod-east
+  namespace: kargo-advanced
+  annotations:
+    kargo.akuity.io/color: violet
+spec:
+  subscriptions:
+    upstreamStages:
+      - name: prod
+  promotionMechanisms:
+    gitRepoUpdates:
+    - repoURL: https://github.com/akuity/kargo-advanced.git
+      writeBranch: env/prod-east
+      render: {}
+    argoCDAppUpdates:
+    - appName: guestbook-prod-east

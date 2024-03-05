@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: guestbook
+  namespace: argocd
+spec:
+  clusterResourceWhitelist:
+  - group: ""
+    kind: Namespace
+  destinations:
+  - name: '*'
+    namespace: guestbook-*
+    server: '*'
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  sourceRepos:
+  - https://github.com/akuity/kargo-advanced.git
