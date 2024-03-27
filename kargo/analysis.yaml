@@ -1,25 +1,37 @@
-# This is a Job based AnalysisTemplate that will succeed or fail depending on
-# if the `succeed` argument is set to `true` or `false` respectively.
+# These are two analysis templates that queries a REST APIs and interprets the result.
+# The `cat-fact` template will always pass.
+# The `cat-fact-fail` template will make three queries and fail after three attempts.
 apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
 metadata:
-  name: test
+  name: cat-fact
   namespace: kargo-advanced
 spec:
-  args:
-  - name: succeed
-    value: "true"
   metrics:
-  - name: test
+  - name: cat-fact
+    interval: 5s
+    count: 5
+    successCondition: result == true
+    failureLimit: 3
     provider:
-      job:
-        spec:
-          backoffLimit: 1
-          template:
-            spec:
-              containers:
-              - name: test
-                image: alpine:latest
-                command: [sh, -c]
-                args: ["sleep 30; exit {{ args.succeed == 'false' ? 1 : 0}}"]
-              restartPolicy: Never
+      web:
+        url: https://cat-fact.herokuapp.com/facts/58e00b5f0aac31001185ed24
+        jsonPath: "{$.status.verified}"
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: cat-fact-fail
+  namespace: kargo-advanced
+spec:
+  metrics:
+  - name: cat-fact-fail
+    interval: 5s
+    count: 5
+    successCondition: result > 2
+    failureLimit: 3
+    provider:
+      web:
+        url: https://cat-fact.herokuapp.com/facts/58e00b5f0aac31001185ed24
+        jsonPath: "{$.status.sentCount}"

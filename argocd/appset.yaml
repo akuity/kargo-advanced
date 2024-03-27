@@ -18,8 +18,9 @@ spec:
     spec:
       destination:
         namespace: guestbook-{{path.basename}}
-        # Replace name with the cluster name:
-        name: demo
+        # Specify either a cluster destination name or server address:
+        # name: REPLACEME
+        # server: https://REPLACEME
       project: guestbook
       source:
         path: app # default render path

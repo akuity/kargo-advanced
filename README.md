@@ -1,22 +1,30 @@
 # Kargo Advanced Example
 
 This is a GitOps repository of an Kargo example that showcases advanced Kargo techniques and features.
+This example will create multiple Argo CD Applications and Kargo Stages with a pipeline to progress
+both git and images changes through multiple Stages.
 
-### Features
+## Features
 * A Warehouse which monitors both a container repository for new images and manifest changes in git
-* Eight Stage deploy pipeline
+* Stage deploy pipeline with A/B testing
 * Git + Image tag promotion
-* Verification using Analysis 
-* Argo CD application syncing
-* Control flow stage
+* Verification with analysis of an HTTP REST endpoint
+* Argo CD Application Syncing
+* Control Flow Stage to coordinate promotion to multiple Stages
 * Rendered Branches
+
+## Requirements
+
+* Kargo v0.5 (for older Kargo versions, switch to the release-X.Y branch)
+* Argo CD instance
+* GitHub git and container repository
 
 ## Instructions
 
 1. Fork this repo, then clone it locally (from your fork).
-2. Run the `personalize.sh` to customize the manifests to use your GitHub username.
+2. Run the `personalize.sh` to customize the manifests to use your GitHub username and Argo CD destination.
 ```
-./personalize.sh <yourgithubusername>
+./personalize.sh
 ```
 3. `git commit` the personalized changes
 ```
@@ -47,42 +55,44 @@ In the GitHub UI, navigate to the "guestbook" container repository, Package sett
 
 ```
 ./download-cli.sh /usr/local/bin/kargo
-
 ```
 
-7. Login to Kargo
+7. Login to Kargo and Argo CD
 
 ```
 kargo login https://<kargo-url> --admin
-```
-
-8. Login to Argo CD
-
-```
 argocd login <argocd-hostname>
 ```
 
-8. Apply the Kargo manifests
+8. Create the Argo CD `guestbook` Project and Applications
+
+```
+argocd proj create -f ./argocd/appproj.yaml
+argocd appset create ./argocd/appset.yaml
+```
+
+9. Create the Kargo resources
 
 ```
 kargo apply -f ./kargo
 ```
 
-9. Add git repository credentials to Kargo.
+10. Add git repository credentials to Kargo (replace `<yourgithubusername>` with your username).
 
 ```
-$ ./add-credential.sh
-Configuring credentials for https://github.com/akuity/kargo-advanced.git
-Username: yourgithubusername
-Password: <github PAT>
+kargo create credentials github-creds \
+    --project kargo-advanced \
+    --git \
+    --username <yourgithubusername> \
+    --repo-url https://github.com/<yourgithubusername>/kargo-advanced.git
 ```
 
 As part of the promotion process, Kargo requires privileges to commit changes to your git repository, as well as the ability to create pull requests. Ensure that the given token has these privileges.
 
 
-10. Promtote the image!
+11. Promote the image!
 
-You now have a Kargo Pipeline which promotes images from the guestbook container image repository, through a three-stage deploy pipeline. Visit the `kargo-advanced` Project in the Kargo UI to see the deploy pipeline.
+You now have a Kargo Pipeline which promotes images from the guestbook container image repository, through a multi-stage deploy pipeline. Visit the `kargo-advanced` Project in the Kargo UI to see the deploy pipeline.
 
 ![pipeline](docs/pipeline.png)
 

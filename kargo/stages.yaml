@@ -15,9 +15,6 @@ spec:
       render: {}
     argoCDAppUpdates:
     - appName: guestbook-dev
-  verification:
-    analysisTemplates:
-    - name: test
 
 ---
 apiVersion: kargo.akuity.io/v1alpha1
@@ -58,7 +55,7 @@ spec:
       render: {}
   verification:
     analysisTemplates:
-    - name: test
+    - name: cat-fact
 
 ---
 apiVersion: kargo.akuity.io/v1alpha1
@@ -79,10 +76,7 @@ spec:
       render: {}
   verification:
     analysisTemplates:
-    - name: test
-    args:
-    - name: succeed
-      value: "false"
+    - name: cat-fact-fail
 
 ---
 apiVersion: kargo.akuity.io/v1alpha1
