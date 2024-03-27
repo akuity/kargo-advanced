@@ -110,3 +110,16 @@ docker buildx imagetools create \
 ```
 
 Then refresh the Warehouse in the UI to detect the new Freight.
+
+## Promoting Manifest Changes
+
+To promote a manifest change, edit the contents under the [`base`](./base) directory. For example, you modify `guestbook-deploy.yaml` with an additional environment variable.
+
+```yaml
+        env:
+        - name: FOO
+          value: bar
+```
+
+Kargo will promote the environment variable in the same manner as with image tags.
+
