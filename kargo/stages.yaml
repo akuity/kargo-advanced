@@ -10,11 +10,11 @@ spec:
     warehouse: guestbook
   promotionMechanisms:
     gitRepoUpdates:
-    - repoURL: https://github.com/akuity/kargo-advanced.git
-      writeBranch: env/dev
-      render: {}
+      - repoURL: https://github.com/hiddeco/kargo-advanced-3.git
+        writeBranch: env/dev
+        render: {}
     argoCDAppUpdates:
-    - appName: guestbook-dev
+      - appName: guestbook-dev
 
 ---
 apiVersion: kargo.akuity.io/v1alpha1
@@ -30,11 +30,11 @@ spec:
       - name: dev
   promotionMechanisms:
     gitRepoUpdates:
-    - repoURL: https://github.com/akuity/kargo-advanced.git
-      writeBranch: env/staging
-      render: {}
+      - repoURL: https://github.com/hiddeco/kargo-advanced-3.git
+        writeBranch: env/staging
+        render: {}
     argoCDAppUpdates:
-    - appName: guestbook-staging
+      - appName: guestbook-staging
 
 ---
 apiVersion: kargo.akuity.io/v1alpha1
@@ -50,12 +50,12 @@ spec:
       - name: staging
   promotionMechanisms:
     gitRepoUpdates:
-    - repoURL: https://github.com/akuity/kargo-advanced.git
-      writeBranch: env/ab-test-a
-      render: {}
+      - repoURL: https://github.com/hiddeco/kargo-advanced-3.git
+        writeBranch: env/ab-test-a
+        render: {}
   verification:
     analysisTemplates:
-    - name: cat-fact
+      - name: cat-fact
 
 ---
 apiVersion: kargo.akuity.io/v1alpha1
@@ -71,12 +71,12 @@ spec:
       - name: staging
   promotionMechanisms:
     gitRepoUpdates:
-    - repoURL: https://github.com/akuity/kargo-advanced.git
-      writeBranch: env/ab-test-b
-      render: {}
+      - repoURL: https://github.com/hiddeco/kargo-advanced-3.git
+        writeBranch: env/ab-test-b
+        render: {}
   verification:
     analysisTemplates:
-    - name: cat-fact-fail
+      - name: cat-fact-fail
 
 ---
 apiVersion: kargo.akuity.io/v1alpha1
@@ -106,11 +106,11 @@ spec:
       - name: prod
   promotionMechanisms:
     gitRepoUpdates:
-    - repoURL: https://github.com/akuity/kargo-advanced.git
-      writeBranch: env/prod-west
-      render: {}
+      - repoURL: https://github.com/hiddeco/kargo-advanced-3.git
+        writeBranch: env/prod-west
+        render: {}
     argoCDAppUpdates:
-    - appName: guestbook-prod-west
+      - appName: guestbook-prod-west
 
 ---
 apiVersion: kargo.akuity.io/v1alpha1
@@ -126,11 +126,11 @@ spec:
       - name: prod
   promotionMechanisms:
     gitRepoUpdates:
-    - repoURL: https://github.com/akuity/kargo-advanced.git
-      writeBranch: env/prod-central
-      render: {}
+      - repoURL: https://github.com/hiddeco/kargo-advanced-3.git
+        writeBranch: env/prod-central
+        render: {}
     argoCDAppUpdates:
-    - appName: guestbook-prod-central
+      - appName: guestbook-prod-central
 
 ---
 apiVersion: kargo.akuity.io/v1alpha1
@@ -146,8 +146,8 @@ spec:
       - name: prod
   promotionMechanisms:
     gitRepoUpdates:
-    - repoURL: https://github.com/akuity/kargo-advanced.git
-      writeBranch: env/prod-east
-      render: {}
+      - repoURL: https://github.com/hiddeco/kargo-advanced-3.git
+        writeBranch: env/prod-east
+        render: {}
     argoCDAppUpdates:
-    - appName: guestbook-prod-east
+      - appName: guestbook-prod-east

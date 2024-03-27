@@ -5,10 +5,10 @@ metadata:
   namespace: kargo-advanced
 spec:
   subscriptions:
-  - image:
-      repoURL: ghcr.io/akuity/guestbook
-      tagSelectionStrategy: SemVer
-      allowTags: ^v?[0-9]+\.[0-9]+\.[0-9]+([\+-].*)?$
-  - git:
-      repoURL: https://github.com/akuity/kargo-advanced.git
-      branch: main
+    - image:
+        repoURL: ghcr.io/hiddeco/guestbook
+        tagSelectionStrategy: SemVer
+        allowTags: ^v?[0-9]+\.[0-9]+\.[0-9]+([\+-].*)?$
+    - git:
+        repoURL: https://github.com/hiddeco/kargo-advanced-3.git
+        branch: main

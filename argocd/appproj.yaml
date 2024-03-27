@@ -5,14 +5,14 @@ metadata:
   namespace: argocd
 spec:
   clusterResourceWhitelist:
-  - group: ""
-    kind: Namespace
+    - group: ""
+      kind: Namespace
   destinations:
-  - name: '*'
-    namespace: guestbook-*
-    server: '*'
+    - name: "*"
+      namespace: guestbook-*
+      server: "*"
   namespaceResourceWhitelist:
-  - group: '*'
-    kind: '*'
+    - group: "*"
+      kind: "*"
   sourceRepos:
-  - https://github.com/akuity/kargo-advanced.git
+    - https://github.com/hiddeco/kargo-advanced-3.git
