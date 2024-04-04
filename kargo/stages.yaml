@@ -56,6 +56,8 @@ spec:
     - repoURL: https://github.com/akuity/kargo-advanced.git
       writeBranch: env/ab-test-a
       render: {}
+    argoCDAppUpdates:
+    - appName: guestbook-ab-test-a
   verification:
     analysisTemplates:
     - name: test
@@ -77,6 +79,8 @@ spec:
     - repoURL: https://github.com/akuity/kargo-advanced.git
       writeBranch: env/ab-test-b
       render: {}
+    argoCDAppUpdates:
+    - appName: guestbook-ab-test-b
   verification:
     analysisTemplates:
     - name: test
