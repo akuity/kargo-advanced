@@ -14,7 +14,7 @@ spec:
     metadata:
       name: guestbook-{{path.basename}}
       annotations:
-        kargo.akuity.io/authorized-stage: kargo-advanced:*
+        kargo.akuity.io/authorized-stage: kargo-advanced:{{path.basename}}
     spec:
       destination:
         namespace: guestbook-{{path.basename}}
@@ -23,6 +23,6 @@ spec:
         # server: https://REPLACEME
       project: guestbook
       source:
-        path: app # default render path
+        path: ./
         repoURL: https://github.com/akuity/kargo-advanced.git
         targetRevision: env/{{path.basename}}
