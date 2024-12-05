@@ -3,8 +3,10 @@
 echo -n "Enter GitHub username/org: "
 read username
 
+ghcr_username=$(echo "$username" | tr '[:upper:]' '[:lower:]')
+
 find . -type f -name '*.yaml' -exec sed -E -i '' s#https://github.com/[-_a-zA-Z0-9]+#https://github.com/${username}#g {} +
-find . -type f -name '*.yaml' -exec sed -E -i '' s#ghcr.io/[-_a-zA-Z0-9]+#ghcr.io/${username}#g {} +
+find . -type f -name '*.yaml' -exec sed -E -i '' s#ghcr.io/[-_a-zA-Z0-9]+#ghcr.io/${ghcr_username}#g {} +
 
 echo "Enter Argo CD destination name or server where applications will be deployed (e.g. in-cluster, https://kubernetes.default.svc)"
 echo -n "Destination: "
