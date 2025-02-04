@@ -14,16 +14,25 @@ spec:
       direct: true
   promotionTemplate:
     spec:
+      vars:
+      - name: repoURL
+        value: https://github.com/akuity/kargo-advanced.git
+      - name: env
+        value: env/${{ ctx.stage }}
+      - name: image
+        value: ghcr.io/akuity/guestbook
+      - name: warehouse
+        value: guestbook
       steps:
       # Clone the Git repository that contains the Kustomize configuration
       # to the ./src directory, and the environment configuration to ./out.
       - uses: git-clone
         config:
-          repoURL: https://github.com/akuity/kargo-advanced.git
+          repoURL: ${{ vars.repoURL }}
           checkout:
-          - fromFreight: true
+          - commit: ${{ commitFrom(vars.repoURL, warehouse(vars.warehouse)).ID }}
             path: ./src
-          - branch: env/dev
+          - branch: ${{ vars.env}}
             path: ./out
             # Create the branch if it does not exist.
             create: true
@@ -39,22 +48,25 @@ spec:
       - uses: kustomize-set-image
         as: update-image
         config:
-          path: ./src/env/dev
+          path: ./src/${{ vars.env }}
           images:
           - image: ghcr.io/akuity/guestbook
+            tag: ${{ imageFrom(vars.image, warehouse(vars.warehouse)).Tag }}
       # Build the Kustomize configuration in the ./src directory using the env/dev
       # overlay to the ./out directory.
       - uses: kustomize-build
         config:
-          path: ./src/env/dev
+          path: ./src/${{ vars.env }}
           outPath: ./out
       # Commit the changes to the Git repository.
       - uses: git-commit
         as: commit
         config:
           path: ./out
-          messageFromSteps:
-          - update-image
+          message: |
+            Update guestbook image in ${{ vars.env }}
+
+            ${{ outputs['update-image'].commitMessage}}
       # Push the changes to the Git repository.
       - uses: git-push
         config:
@@ -66,8 +78,8 @@ spec:
           apps:
           - name: guestbook-dev
             sources:
-            - repoURL: https://github.com/akuity/kargo-advanced.git
-              desiredCommitFromStep: commit
+            - repoURL: ${{ vars.repoURL }}
+              desiredRevision: ${{ outputs['commit'].commit }}
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -87,16 +99,25 @@ spec:
       - dev
   promotionTemplate:
     spec:
+      vars:
+      - name: repoURL
+        value: https://github.com/akuity/kargo-advanced.git
+      - name: env
+        value: env/${{ ctx.stage }}
+      - name: image
+        value: ghcr.io/akuity/guestbook
+      - name: warehouse
+        value: guestbook
       steps:
       # Clone the Git repository that contains the Kustomize configuration
       # to the ./src directory, and the environment configuration to ./out.
       - uses: git-clone
         config:
-          repoURL: https://github.com/akuity/kargo-advanced.git
+          repoURL: ${{ vars.repoURL }}
           checkout:
-          - fromFreight: true
+          - commit: ${{ commitFrom(vars.repoURL, warehouse(vars.warehouse))).ID }}
             path: ./src
-          - branch: env/staging
+          - branch: ${{ vars.env }}
             path: ./out
             # Create the branch if it does not exist.
             create: true
@@ -112,22 +133,25 @@ spec:
       - uses: kustomize-set-image
         as: update-image
         config:
-          path: ./src/env/staging
+          path: ./src/${{ vars.env }}
           images:
           - image: ghcr.io/akuity/guestbook
+            tag: vars.warehouse
       # Build the Kustomize configuration in the ./src directory using the
       # env/staging overlay to the ./out directory.
       - uses: kustomize-build
         config:
-          path: ./src/env/staging
+          path: ./src/${{ vars.env }}
           outPath: ./out
       # Commit the changes to the Git repository.
       - uses: git-commit
         as: commit
         config:
           path: ./out
-          messageFromSteps:
-          - update-image
+          message: |
+            Update guestbook image in ${{ vars.env }}
+
+            ${{ outputs['update-image'].commitMessage}}
       # Push the changes to the Git repository.
       - uses: git-push
         config:
@@ -139,8 +163,8 @@ spec:
           apps:
           - name: guestbook-staging
             sources:
-            - repoURL: https://github.com/akuity/kargo-advanced.git
-              desiredCommitFromStep: commit
+            - repoURL: ${{ vars.repoURL }}
+              desiredRevision: ${{ outputs['commit'].commit }}
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -160,16 +184,25 @@ spec:
       - staging
   promotionTemplate:
     spec:
+      vars:
+      - name: repoURL
+        value: https://github.com/akuity/kargo-advanced.git
+      - name: env
+        value: env/${{ ctx.stage }}
+      - name: image
+        value: ghcr.io/akuity/guestbook
+      - name: warehouse
+        value: guestbook
       steps:
       # Clone the Git repository that contains the Kustomize configuration
       # to the ./src directory, and the environment configuration to ./out.
       - uses: git-clone
         config:
-          repoURL: https://github.com/akuity/kargo-advanced.git
+          repoURL: ${{ vars.repoURL }}
           checkout:
-          - fromFreight: true
+          - commit: ${{ commitFrom(vars.repoURL, warehouse("guestbook")).ID }}
             path: ./src
-          - branch: env/ab-test-a
+          - branch: ${{ vars.env }}
             path: ./out
             # Create the branch if it does not exist.
             create: true
@@ -185,22 +218,25 @@ spec:
       - uses: kustomize-set-image
         as: update-image
         config:
-          path: ./src/env/ab-test-a
+          path: ./src/${{ vars.env }}
           images:
-          - image: ghcr.io/akuity/guestbook
+          - image: ${{ vars.image }}
+            tag: vars.warehouse
       # Build the Kustomize configuration in the ./src directory using the
       # env/ab-test-a overlay to the ./out directory.
       - uses: kustomize-build
         config:
-          path: ./src/env/ab-test-a
+          path: ./src/${{ vars.env }}
           outPath: ./out
       # Commit the changes to the Git repository.
       - uses: git-commit
         as: commit
         config:
           path: ./out
-          messageFromSteps:
-          - update-image
+          message: |
+            Update guestbook image in ${{ vars.env }}
+
+            ${{ outputs['update-image'].commitMessage}}
       # Push the changes to the Git repository.
       - uses: git-push
         config:
@@ -212,8 +248,8 @@ spec:
           apps:
             - name: guestbook-ab-test-a
               sources:
-              - repoURL: https://github.com/akuity/kargo-advanced.git
-                desiredCommitFromStep: commit
+              - repoURL: ${{ vars.repoURL }}
+                desiredRevision: ${{ outputs['commit'].commit }}
   verification:
     analysisTemplates:
     - name: cat-fact
@@ -236,16 +272,25 @@ spec:
       - staging
   promotionTemplate:
     spec:
+      vars:
+      - name: repoURL
+        value: https://github.com/akuity/kargo-advanced.git
+      - name: env
+        value: env/${{ ctx.stage }}
+      - name: image
+        value: ghcr.io/akuity/guestbook
+      - name: warehouse
+        value: guestbook
       steps:
       # Clone the Git repository that contains the Kustomize configuration
       # to the ./src directory, and the environment configuration to ./out.
       - uses: git-clone
         config:
-          repoURL: https://github.com/akuity/kargo-advanced.git
+          repoURL: ${{ vars.repoURL }}
           checkout:
-          - fromFreight: true
+          - commit: ${{ commitFrom(vars.repoURL, warehouse("guestbook")).ID }}
             path: ./src
-          - branch: env/ab-test-b
+          - branch: ${{ vars.env }}
             path: ./out
             # Create the branch if it does not exist.
             create: true
@@ -261,22 +306,25 @@ spec:
       - uses: kustomize-set-image
         as: update-image
         config:
-          path: ./src/env/ab-test-b
+          path: ./src/${{ vars.env }}
           images:
-          - image: ghcr.io/akuity/guestbook
+          - image: ${{ vars.image }}
+            tag: vars.warehouse
       # Build the Kustomize configuration in the ./src directory using the
       # env/ab-test-b overlay to the ./out directory.
       - uses: kustomize-build
         config:
-          path: ./src/env/ab-test-b
+          path: ./src/${{ vars.env }}
           outPath: ./out
       # Commit the changes to the Git repository.
       - uses: git-commit
         as: commit
         config:
           path: ./out
-          messageFromSteps:
-          - update-image
+          message: |
+            Update guestbook image in ${{ vars.env }}
+
+            ${{ outputs['update-image'].commitMessage}}
       # Push the changes to the Git repository.
       - uses: git-push
         config:
@@ -288,8 +336,8 @@ spec:
           apps:
           - name: guestbook-ab-test-b
             sources:
-            - repoURL: https://github.com/akuity/kargo-advanced.git
-              desiredCommitFromStep: commit
+            - repoURL: ${{ vars.repoURL }}
+              desiredRevision: ${{ outputs['commit'].commit }}
   verification:
     analysisTemplates:
     - name: cat-fact-fail
@@ -330,16 +378,25 @@ spec:
       - prod
   promotionTemplate:
     spec:
+      vars:
+      - name: repoURL
+        value: https://github.com/akuity/kargo-advanced.git
+      - name: env
+        value: env/${{ ctx.stage }}
+      - name: image
+        value: ghcr.io/akuity/guestbook
+      - name: warehouse
+        value: guestbook
       steps:
       # Clone the Git repository that contains the Kustomize configuration
       # to the ./src directory, and the environment configuration to ./out.
       - uses: git-clone
         config:
-          repoURL: https://github.com/akuity/kargo-advanced.git
+          repoURL: ${{ vars.repoURL }}
           checkout:
-          - fromFreight: true
+          - commit: ${{ commitFrom(vars.repoURL, warehouse("guestbook")).ID }}
             path: ./src
-          - branch: env/prod-west
+          - branch: ${{ vars.env }}
             path: ./out
             # Create the branch if it does not exist.
             create: true
@@ -355,22 +412,25 @@ spec:
       - uses: kustomize-set-image
         as: update-image
         config:
-          path: ./src/env/prod-west
+          path: ./src/${{ vars.env }}
           images:
-          - image: ghcr.io/akuity/guestbook
+          - image: ${{ vars.image }}
+            tag: vars.warehouse
       # Build the Kustomize configuration in the ./src directory using the
       # env/prod-west overlay to the ./out directory.
       - uses: kustomize-build
         config:
-          path: ./src/env/prod-west
+          path: ./src/${{ vars.env }}
           outPath: ./out
       # Commit the changes to the Git repository.
       - uses: git-commit
         as: commit
         config:
           path: ./out
-          messageFromSteps:
-          - update-image
+          message: |
+            Update guestbook image in ${{ vars.env }}
+
+            ${{ outputs['update-image'].commitMessage}}
       # Push the changes to the Git repository.
       - uses: git-push
         config:
@@ -382,8 +442,8 @@ spec:
           apps:
           - name: guestbook-prod-west
             sources:
-            - repoURL: https://github.com/akuity/kargo-advanced.git
-              desiredCommitFromStep: commit
+            - repoURL: ${{ vars.repoURL }}
+              desiredRevision: ${{ outputs['commit'].commit }}
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -403,16 +463,25 @@ spec:
       - prod
   promotionTemplate:
     spec:
+      vars:
+      - name: repoURL
+        value: https://github.com/akuity/kargo-advanced.git
+      - name: env
+        value: env/${{ ctx.stage }}
+      - name: image
+        value: ghcr.io/akuity/guestbook
+      - name: warehouse
+        value: guestbook
       steps:
       # Clone the Git repository that contains the Kustomize configuration
       # to the ./src directory, and the environment configuration to ./out.
       - uses: git-clone
         config:
-          repoURL: https://github.com/akuity/kargo-advanced.git
+          repoURL: ${{ vars.repoURL }}
           checkout:
-          - fromFreight: true
+          - commit: ${{ commitFrom(vars.repoURL, warehouse("guestbook")).ID }}
             path: ./src
-          - branch: env/prod-central
+          - branch: ${{ vars.env }}
             path: ./out
             # Create the branch if it does not exist.
             create: true
@@ -428,22 +497,25 @@ spec:
       - uses: kustomize-set-image
         as: update-image
         config:
-          path: ./src/env/prod-central
+          path: ./src/${{ vars.env }}
           images:
-          - image: ghcr.io/akuity/guestbook
+          - image: ${{ vars.image }}
+            tag: vars.warehouse
       # Build the Kustomize configuration in the ./src directory using the
       # env/prod-central overlay to the ./out directory.
       - uses: kustomize-build
         config:
-          path: ./src/env/prod-central
+          path: ./src/${{ vars.env }}
           outPath: ./out
       # Commit the changes to the Git repository.
       - uses: git-commit
         as: commit
         config:
           path: ./out
-          messageFromSteps:
-          - update-image
+          message: |
+            Update guestbook image in ${{ vars.env }}
+
+            ${{ outputs['update-image'].commitMessage}}
       # Push the changes to the Git repository.
       - uses: git-push
         config:
@@ -455,8 +527,8 @@ spec:
           apps:
           - name: guestbook-prod-central
             sources:
-            - repoURL: https://github.com/akuity/kargo-advanced.git
-              desiredCommitFromStep: commit
+            - repoURL: ${{ vars.repoURL }}
+              desiredRevision: ${{ outputs['commit'].commit }}
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -476,16 +548,25 @@ spec:
       - prod
   promotionTemplate:
     spec:
+      vars:
+      - name: repoURL
+        value: https://github.com/akuity/kargo-advanced.git
+      - name: env
+        value: env/${{ ctx.stage }}
+      - name: image
+        value: ghcr.io/akuity/guestbook
+      - name: warehouse
+        value: guestbook
       steps:
       # Clone the Git repository that contains the Kustomize configuration
       # to the ./src directory, and the environment configuration to ./out.
       - uses: git-clone
         config:
-          repoURL: https://github.com/akuity/kargo-advanced.git
+          repoURL: ${{ vars.repoURL }}
           checkout:
-          - fromFreight: true
+          - commit: ${{ commitFrom(vars.repoURL, warehouse("guestbook")).ID }}
             path: ./src
-          - branch: env/prod-east
+          - branch: ${{ vars.env }}
             path: ./out
             # Create the branch if it does not exist.
             create: true
@@ -501,22 +582,25 @@ spec:
       - uses: kustomize-set-image
         as: update-image
         config:
-          path: ./src/env/prod-east
+          path: ./src/${{ vars.env }}
           images:
-          - image: ghcr.io/akuity/guestbook
+          - image: ${{ vars.image }}
+            tag: vars.warehouse
       # Build the Kustomize configuration in the ./src directory using the
       # env/prod-east overlay to the ./out directory.
       - uses: kustomize-build
         config:
-          path: ./src/env/prod-east
+          path: ./src/${{ vars.env }}
           outPath: ./out
       # Commit the changes to the Git repository.
       - uses: git-commit
         as: commit
         config:
           path: ./out
-          messageFromSteps:
-          - update-image
+          message: |
+            Update guestbook image in ${{ vars.env }}
+
+            ${{ outputs['update-image'].commitMessage}}
       # Push the changes to the Git repository.
       - uses: git-push
         config:
@@ -528,5 +612,5 @@ spec:
           apps:
           - name: guestbook-prod-east
             sources:
-            - repoURL: https://github.com/akuity/kargo-advanced.git
-              desiredCommitFromStep: commit
+            - repoURL: ${{ vars.repoURL }}
+              desiredRevision: ${{ outputs['commit'].commit }}
