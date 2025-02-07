@@ -1,0 +1,67 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: PromotionTask
+metadata:
+  name: promote
+  namespace: kargo-advanced
+spec:
+  vars:
+  - name: repoURL
+    value: https://github.com/akuity/kargo-advanced.git
+  - name: branch
+    value: main
+  - name: image
+    value: ghcr.io/akuity/guestbook
+  steps:
+  # Clone the Git repository that contains the Kustomize configuration
+  # to the ./src directory, and the environment configuration to ./out.
+  - uses: git-clone
+    config:
+      repoURL: ${{ vars.repoURL }}
+      checkout:
+      - commit: ${{ commitFrom(vars.repoURL).ID }}
+        path: ./src
+      - branch: env/${{ ctx.stage }}
+        path: ./out
+        # Create the branch if it does not exist.
+        create: true
+  # Following a "rendered branch" pattern, we delete all files in the
+  # ./out directory to ensure that we only have the files that are
+  # rendered from the Kustomize configuration in the ./src directory
+  # of the repository after being rendered.
+  - uses: git-clear
+    config:
+      path: ./out
+  # Update the image in the Kustomize configuration located at ./src/env/<stage>
+  # in the repository.
+  - uses: kustomize-set-image
+    as: update-image
+    config:
+      path: ./src/env/${{ ctx.stage }}
+      images:
+      - image: ${{ vars.image }}
+        tag: ${{ imageFrom(vars.image).Tag}}
+  # Build the Kustomize configuration in the ./src directory using the env/<stage>
+  # overlay to the ./out directory.
+  - uses: kustomize-build
+    config:
+      path: ./src/env/${{ ctx.stage }}
+      outPath: ./out
+  # Commit the changes to the Git repository.
+  - uses: git-commit
+    as: commit
+    config:
+      path: ./out
+      message: ${{ task.outputs['update-image'].commitMessage }}
+  # Push the changes to the Git repository.
+  - uses: git-push
+    config:
+      path: ./out
+  # Request a sync of the ArgoCD Application to apply the changes from the
+  # commit.
+  - uses: argocd-update
+    config:
+      apps:
+      - name: guestbook-${{ ctx.stage }}
+        sources:
+        - repoURL: ${{ vars.repoURL }}
+          desiredRevision: ${{ task.outputs['commit'].commit }}

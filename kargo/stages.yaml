@@ -15,59 +15,9 @@ spec:
   promotionTemplate:
     spec:
       steps:
-      # Clone the Git repository that contains the Kustomize configuration
-      # to the ./src directory, and the environment configuration to ./out.
-      - uses: git-clone
-        config:
-          repoURL: https://github.com/akuity/kargo-advanced.git
-          checkout:
-          - fromFreight: true
-            path: ./src
-          - branch: env/dev
-            path: ./out
-            # Create the branch if it does not exist.
-            create: true
-      # Following a "rendered branch" pattern, we delete all files in the
-      # ./out directory to ensure that we only have the files that are
-      # rendered from the Kustomize configuration in the ./src directory
-      # of the repository after being rendered.
-      - uses: git-clear
-        config:
-          path: ./out
-      # Update the image in the Kustomize configuration located at ./src/env/dev
-      # in the repository.
-      - uses: kustomize-set-image
-        as: update-image
-        config:
-          path: ./src/env/dev
-          images:
-          - image: ghcr.io/akuity/guestbook
-      # Build the Kustomize configuration in the ./src directory using the env/dev
-      # overlay to the ./out directory.
-      - uses: kustomize-build
-        config:
-          path: ./src/env/dev
-          outPath: ./out
-      # Commit the changes to the Git repository.
-      - uses: git-commit
-        as: commit
-        config:
-          path: ./out
-          messageFromSteps:
-          - update-image
-      # Push the changes to the Git repository.
-      - uses: git-push
-        config:
-          path: ./out
-      # Request a sync of the ArgoCD Application to apply the changes from the
-      # commit.
-      - uses: argocd-update
-        config:
-          apps:
-          - name: guestbook-dev
-            sources:
-            - repoURL: https://github.com/akuity/kargo-advanced.git
-              desiredCommitFromStep: commit
+      - task:
+          name: promote
+
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -82,65 +32,14 @@ spec:
       kind: Warehouse
       name: guestbook
     sources:
-      direct: false
       stages:
       - dev
   promotionTemplate:
     spec:
       steps:
-      # Clone the Git repository that contains the Kustomize configuration
-      # to the ./src directory, and the environment configuration to ./out.
-      - uses: git-clone
-        config:
-          repoURL: https://github.com/akuity/kargo-advanced.git
-          checkout:
-          - fromFreight: true
-            path: ./src
-          - branch: env/staging
-            path: ./out
-            # Create the branch if it does not exist.
-            create: true
-      # Following a "rendered branch" pattern, we delete all files in the
-      # ./out directory to ensure that we only have the files that are
-      # rendered from the Kustomize configuration in the ./src directory
-      # of the repository after being rendered.
-      - uses: git-clear
-        config:
-          path: ./out
-      # Update the image in the Kustomize configuration located at
-      # ./src/env/staging in the repository.
-      - uses: kustomize-set-image
-        as: update-image
-        config:
-          path: ./src/env/staging
-          images:
-          - image: ghcr.io/akuity/guestbook
-      # Build the Kustomize configuration in the ./src directory using the
-      # env/staging overlay to the ./out directory.
-      - uses: kustomize-build
-        config:
-          path: ./src/env/staging
-          outPath: ./out
-      # Commit the changes to the Git repository.
-      - uses: git-commit
-        as: commit
-        config:
-          path: ./out
-          messageFromSteps:
-          - update-image
-      # Push the changes to the Git repository.
-      - uses: git-push
-        config:
-          path: ./out
-      # Request a sync of the ArgoCD Application to apply the changes from the
-      # commit.
-      - uses: argocd-update
-        config:
-          apps:
-          - name: guestbook-staging
-            sources:
-            - repoURL: https://github.com/akuity/kargo-advanced.git
-              desiredCommitFromStep: commit
+      - task:
+          name: promote
+
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -155,68 +54,19 @@ spec:
       kind: Warehouse
       name: guestbook
     sources:
-      direct: false
       stages:
       - staging
   promotionTemplate:
     spec:
       steps:
-      # Clone the Git repository that contains the Kustomize configuration
-      # to the ./src directory, and the environment configuration to ./out.
-      - uses: git-clone
-        config:
-          repoURL: https://github.com/akuity/kargo-advanced.git
-          checkout:
-          - fromFreight: true
-            path: ./src
-          - branch: env/ab-test-a
-            path: ./out
-            # Create the branch if it does not exist.
-            create: true
-      # Following a "rendered branch" pattern, we delete all files in the
-      # ./out directory to ensure that we only have the files that are
-      # rendered from the Kustomize configuration in the ./src directory
-      # of the repository after being rendered.
-      - uses: git-clear
-        config:
-          path: ./out
-      # Update the image in the Kustomize configuration located at
-      # ./src/env/ab-test-a in the repository.
-      - uses: kustomize-set-image
-        as: update-image
-        config:
-          path: ./src/env/ab-test-a
-          images:
-          - image: ghcr.io/akuity/guestbook
-      # Build the Kustomize configuration in the ./src directory using the
-      # env/ab-test-a overlay to the ./out directory.
-      - uses: kustomize-build
-        config:
-          path: ./src/env/ab-test-a
-          outPath: ./out
-      # Commit the changes to the Git repository.
-      - uses: git-commit
-        as: commit
-        config:
-          path: ./out
-          messageFromSteps:
-          - update-image
-      # Push the changes to the Git repository.
-      - uses: git-push
-        config:
-          path: ./out
-      # Request a sync of the ArgoCD Application to apply the changes from the
-      # commit.
-      - uses: argocd-update
-        config:
-          apps:
-            - name: guestbook-ab-test-a
-              sources:
-              - repoURL: https://github.com/akuity/kargo-advanced.git
-                desiredCommitFromStep: commit
+      - task:
+          name: promote
   verification:
     analysisTemplates:
-    - name: cat-fact
+    - name: pokemon-xp
+    args:
+    - name: pokemon
+      value: pikachu
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -231,68 +81,20 @@ spec:
       kind: Warehouse
       name: guestbook
     sources:
-      direct: false
       stages:
       - staging
   promotionTemplate:
     spec:
       steps:
-      # Clone the Git repository that contains the Kustomize configuration
-      # to the ./src directory, and the environment configuration to ./out.
-      - uses: git-clone
-        config:
-          repoURL: https://github.com/akuity/kargo-advanced.git
-          checkout:
-          - fromFreight: true
-            path: ./src
-          - branch: env/ab-test-b
-            path: ./out
-            # Create the branch if it does not exist.
-            create: true
-      # Following a "rendered branch" pattern, we delete all files in the
-      # ./out directory to ensure that we only have the files that are
-      # rendered from the Kustomize configuration in the ./src directory
-      # of the repository after being rendered.
-      - uses: git-clear
-        config:
-          path: ./out
-      # Update the image in the Kustomize configuration located at
-      # ./src/env/ab-test-b in the repository.
-      - uses: kustomize-set-image
-        as: update-image
-        config:
-          path: ./src/env/ab-test-b
-          images:
-          - image: ghcr.io/akuity/guestbook
-      # Build the Kustomize configuration in the ./src directory using the
-      # env/ab-test-b overlay to the ./out directory.
-      - uses: kustomize-build
-        config:
-          path: ./src/env/ab-test-b
-          outPath: ./out
-      # Commit the changes to the Git repository.
-      - uses: git-commit
-        as: commit
-        config:
-          path: ./out
-          messageFromSteps:
-          - update-image
-      # Push the changes to the Git repository.
-      - uses: git-push
-        config:
-          path: ./out
-      # Request a sync of the ArgoCD Application to apply the changes from the
-      # commit.
-      - uses: argocd-update
-        config:
-          apps:
-          - name: guestbook-ab-test-b
-            sources:
-            - repoURL: https://github.com/akuity/kargo-advanced.git
-              desiredCommitFromStep: commit
+      - task:
+          name: promote
+
   verification:
     analysisTemplates:
-    - name: cat-fact-fail
+    - name: pokemon-xp
+    args:
+    - name: pokemon
+      value: charizard
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -307,7 +109,6 @@ spec:
       kind: Warehouse
       name: guestbook
     sources:
-      direct: false
       stages:
       - ab-test-a
       - ab-test-b
@@ -325,65 +126,14 @@ spec:
       kind: Warehouse
       name: guestbook
     sources:
-      direct: false
       stages:
       - prod
   promotionTemplate:
     spec:
       steps:
-      # Clone the Git repository that contains the Kustomize configuration
-      # to the ./src directory, and the environment configuration to ./out.
-      - uses: git-clone
-        config:
-          repoURL: https://github.com/akuity/kargo-advanced.git
-          checkout:
-          - fromFreight: true
-            path: ./src
-          - branch: env/prod-west
-            path: ./out
-            # Create the branch if it does not exist.
-            create: true
-      # Following a "rendered branch" pattern, we delete all files in the
-      # ./out directory to ensure that we only have the files that are
-      # rendered from the Kustomize configuration in the ./src directory
-      # of the repository after being rendered.
-      - uses: git-clear
-        config:
-          path: ./out
-      # Update the image in the Kustomize configuration located at
-      # ./src/env/prod-west in the repository.
-      - uses: kustomize-set-image
-        as: update-image
-        config:
-          path: ./src/env/prod-west
-          images:
-          - image: ghcr.io/akuity/guestbook
-      # Build the Kustomize configuration in the ./src directory using the
-      # env/prod-west overlay to the ./out directory.
-      - uses: kustomize-build
-        config:
-          path: ./src/env/prod-west
-          outPath: ./out
-      # Commit the changes to the Git repository.
-      - uses: git-commit
-        as: commit
-        config:
-          path: ./out
-          messageFromSteps:
-          - update-image
-      # Push the changes to the Git repository.
-      - uses: git-push
-        config:
-          path: ./out
-      # Request a sync of the ArgoCD Application to apply the changes from the
-      # commit.
-      - uses: argocd-update
-        config:
-          apps:
-          - name: guestbook-prod-west
-            sources:
-            - repoURL: https://github.com/akuity/kargo-advanced.git
-              desiredCommitFromStep: commit
+      - task:
+          name: promote
+
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -398,65 +148,14 @@ spec:
       kind: Warehouse
       name: guestbook
     sources:
-      direct: false
       stages:
       - prod
   promotionTemplate:
     spec:
       steps:
-      # Clone the Git repository that contains the Kustomize configuration
-      # to the ./src directory, and the environment configuration to ./out.
-      - uses: git-clone
-        config:
-          repoURL: https://github.com/akuity/kargo-advanced.git
-          checkout:
-          - fromFreight: true
-            path: ./src
-          - branch: env/prod-central
-            path: ./out
-            # Create the branch if it does not exist.
-            create: true
-      # Following a "rendered branch" pattern, we delete all files in the
-      # ./out directory to ensure that we only have the files that are
-      # rendered from the Kustomize configuration in the ./src directory
-      # of the repository after being rendered.
-      - uses: git-clear
-        config:
-          path: ./out
-      # Update the image in the Kustomize configuration located at
-      # ./src/env/prod-central in the repository.
-      - uses: kustomize-set-image
-        as: update-image
-        config:
-          path: ./src/env/prod-central
-          images:
-          - image: ghcr.io/akuity/guestbook
-      # Build the Kustomize configuration in the ./src directory using the
-      # env/prod-central overlay to the ./out directory.
-      - uses: kustomize-build
-        config:
-          path: ./src/env/prod-central
-          outPath: ./out
-      # Commit the changes to the Git repository.
-      - uses: git-commit
-        as: commit
-        config:
-          path: ./out
-          messageFromSteps:
-          - update-image
-      # Push the changes to the Git repository.
-      - uses: git-push
-        config:
-          path: ./out
-      # Request a sync of the ArgoCD Application to apply the changes from the
-      # commit.
-      - uses: argocd-update
-        config:
-          apps:
-          - name: guestbook-prod-central
-            sources:
-            - repoURL: https://github.com/akuity/kargo-advanced.git
-              desiredCommitFromStep: commit
+      - task:
+          name: promote
+
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -471,62 +170,10 @@ spec:
       kind: Warehouse
       name: guestbook
     sources:
-      direct: false
       stages:
       - prod
   promotionTemplate:
     spec:
       steps:
-      # Clone the Git repository that contains the Kustomize configuration
-      # to the ./src directory, and the environment configuration to ./out.
-      - uses: git-clone
-        config:
-          repoURL: https://github.com/akuity/kargo-advanced.git
-          checkout:
-          - fromFreight: true
-            path: ./src
-          - branch: env/prod-east
-            path: ./out
-            # Create the branch if it does not exist.
-            create: true
-      # Following a "rendered branch" pattern, we delete all files in the
-      # ./out directory to ensure that we only have the files that are
-      # rendered from the Kustomize configuration in the ./src directory
-      # of the repository after being rendered.
-      - uses: git-clear
-        config:
-          path: ./out
-      # Update the image in the Kustomize configuration located at
-      # ./src/env/prod-east in the repository.
-      - uses: kustomize-set-image
-        as: update-image
-        config:
-          path: ./src/env/prod-east
-          images:
-          - image: ghcr.io/akuity/guestbook
-      # Build the Kustomize configuration in the ./src directory using the
-      # env/prod-east overlay to the ./out directory.
-      - uses: kustomize-build
-        config:
-          path: ./src/env/prod-east
-          outPath: ./out
-      # Commit the changes to the Git repository.
-      - uses: git-commit
-        as: commit
-        config:
-          path: ./out
-          messageFromSteps:
-          - update-image
-      # Push the changes to the Git repository.
-      - uses: git-push
-        config:
-          path: ./out
-      # Request a sync of the ArgoCD Application to apply the changes from the
-      # commit.
-      - uses: argocd-update
-        config:
-          apps:
-          - name: guestbook-prod-east
-            sources:
-            - repoURL: https://github.com/akuity/kargo-advanced.git
-              desiredCommitFromStep: commit
+      - task:
+          name: promote

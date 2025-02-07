@@ -1,37 +1,20 @@
-# These are two analysis templates that queries a REST APIs and interprets the result.
-# The `cat-fact` template will always pass.
-# The `cat-fact-fail` template will make three queries and fail after three attempts.
+# This is a sample analysis template that uses the PokeAPI to
+# check the base experience of a Pokemon is under threshold.
 apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
 metadata:
-  name: cat-fact
+  name: pokemon-xp
   namespace: kargo-advanced
 spec:
+  args:
+  - name: pokemon
   metrics:
-  - name: cat-fact
+  - name: pokemon-xp
     interval: 5s
     count: 5
-    successCondition: result == true
+    successCondition: result < 200
     failureLimit: 3
     provider:
       web:
-        url: https://cat-fact.herokuapp.com/facts/58e00b5f0aac31001185ed24
-        jsonPath: "{$.status.verified}"
-
----
-apiVersion: argoproj.io/v1alpha1
-kind: AnalysisTemplate
-metadata:
-  name: cat-fact-fail
-  namespace: kargo-advanced
-spec:
-  metrics:
-  - name: cat-fact-fail
-    interval: 5s
-    count: 5
-    successCondition: result > 2
-    failureLimit: 3
-    provider:
-      web:
-        url: https://cat-fact.herokuapp.com/facts/58e00b5f0aac31001185ed24
-        jsonPath: "{$.status.sentCount}"
+        url: https://pokeapi.co/api/v2/pokemon/{{args.pokemon}}
+        jsonPath: "{$.base_experience}"
