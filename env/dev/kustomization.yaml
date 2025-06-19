@@ -2,6 +2,60 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-- ../../base
+- ../../base # This now includes frontend-service and api-service directories
 
 namespace: guestbook-dev
+
+# Patches to rename the placeholder namespace to the environment-specific one
+patches:
+- patch: |-
+    - op: replace
+      path: /metadata/name
+      value: guestbook-dev
+  target:
+    kind: Namespace
+    name: guestbook-placeholder
+
+images:
+  # Kargo will update these tags during promotion
+  - name: ghcr.io/alkimake/frontend-service # This must match the image name in base/frontend-service/deployment.yaml
+    newName: ghcr.io/alkimake/frontend-service # personalize.sh will change 'alkimake'
+    newTag: dev-initial # Placeholder, Kargo will manage this
+  - name: ghcr.io/alkimake/api-service # This must match the image name in base/api-service/deployment.yaml
+    newName: ghcr.io/alkimake/api-service # personalize.sh will change 'alkimake'
+    newTag: dev-initial # Placeholder, Kargo will manage this
+  # Keep original guestbook image for now, will be removed once fully transitioned
+  - name: ghcr.io/alkimake/guestbook
+    newName: ghcr.io/alkimake/guestbook
+    newTag: dev-initial
+
+
+# Example of how to patch SERVICE_VERSION for api-service if Kargo Render is set up for it
+# For now, Kargo stage config focuses on image updates.
+# commonAnnotations:
+#   kargo.akuity.io/render-config.api-service.env.SERVICE_VERSION: "$.images.api-service.tag"
+# deployments:
+# - name: api-service
+#   patches:
+#   - path: spec/template/spec/containers/0/env/0/value
+#     value: "will-be-patched-by-kargo" # Placeholder for SERVICE_VERSION
+#     target:
+#       name: api-service
+#       kind: Deployment
+
+# Example: Add a replica patch specific to dev
+# patchesStrategicMerge:
+# - |-
+#   apiVersion: apps/v1
+#   kind: Deployment
+#   metadata:
+#     name: frontend-service
+#   spec:
+#     replicas: 1
+# - |-
+#   apiVersion: apps/v1
+#   kind: Deployment
+#   metadata:
+#     name: api-service
+#   spec:
+#     replicas: 1

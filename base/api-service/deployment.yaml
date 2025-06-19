@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-service
+  labels:
+    app: api-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api-service
+  template:
+    metadata:
+      labels:
+        app: api-service
+    spec:
+      containers:
+      - name: api-service
+        # The image tag will be updated by Kargo/Kustomize
+        image: ghcr.io/alkimake/api-service:placeholder
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SERVICE_VERSION
+          value: "placeholder-version" # This will be patched by Kargo/Kustomize from Freight
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "300m"
+          requests:
+            memory: "64Mi"
+            cpu: "150m"
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ping
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5

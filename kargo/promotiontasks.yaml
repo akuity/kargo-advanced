@@ -6,11 +6,11 @@ metadata:
 spec:
   vars:
   - name: repoURL
-    value: https://github.com/akuity/kargo-advanced.git
+    value: https://github.com/alkimake/kargo-advanced.git
   - name: branch
     value: main
   - name: image
-    value: ghcr.io/akuity/guestbook
+    value: ghcr.io/alkimake/guestbook
   steps:
   # Clone the Git repository that contains the Kustomize configuration
   # to the ./src directory, and the environment configuration to ./out.

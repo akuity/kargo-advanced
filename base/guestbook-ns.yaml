@@ -1,4 +1,6 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: guestbook
+  # This name will be overridden by environment-specific kustomizations
+  name: guestbook-placeholder
+  # We could add common labels/annotations for all namespaces here if needed

@@ -4,4 +4,42 @@ kind: Kustomization
 resources:
 - ../../base
 
-namespace: guestbook-prod-central
+# This will be the namespace for the 'prod' stage
+namespace: guestbook-prod
+
+patches:
+- patch: |-
+    - op: replace
+      path: /metadata/name
+      value: guestbook-prod # Changed from guestbook-prod-central
+  target:
+    kind: Namespace
+    name: guestbook-placeholder
+
+images:
+  - name: ghcr.io/alkimake/frontend-service
+    newName: ghcr.io/alkimake/frontend-service # personalize.sh will change 'alkimake'
+    newTag: prod-initial # Placeholder, Kargo will manage this
+  - name: ghcr.io/alkimake/api-service
+    newName: ghcr.io/alkimake/api-service # personalize.sh will change 'alkimake'
+    newTag: prod-initial # Placeholder, Kargo will manage this
+  - name: ghcr.io/alkimake/guestbook
+    newName: ghcr.io/alkimake/guestbook
+    newTag: prod-initial
+
+# Example: Production might have higher replica counts
+# patchesStrategicMerge:
+# - |-
+#   apiVersion: apps/v1
+#   kind: Deployment
+#   metadata:
+#     name: frontend-service
+#   spec:
+#     replicas: 3
+# - |-
+#   apiVersion: apps/v1
+#   kind: Deployment
+#   metadata:
+#     name: api-service
+#   spec:
+#     replicas: 3

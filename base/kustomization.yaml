@@ -1,9 +1,21 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: guestbook
+# The namespace will be applied by the environment-specific kustomizations (e.g., in env/dev)
+# We remove it from the base to avoid conflicts and allow each environment to define its own.
+# namespace: guestbook
 
 resources:
-- guestbook-ns.yaml
+# - guestbook-ns.yaml # Namespace definition will be per-environment or managed by Argo CD
+- frontend-service
+- api-service
+# We will remove guestbook-deploy.yaml and guestbook-svc.yaml later when frontend-service replaces it.
+# For now, keeping them avoids breaking the current setup until new services are fully in place.
 - guestbook-deploy.yaml
 - guestbook-svc.yaml
+# We'll also need a common namespace resource, or ensure Argo CD creates them.
+# For now, we'll assume Argo CD/environment overlays will handle namespace creation.
+# Consider adding a common guestbook-ns.yaml back if needed,
+# or ensure each app in ApplicationSet creates its namespace.
+# The original guestbook-ns.yaml might be fine if all services live in the same ns per env.
+- guestbook-ns.yaml

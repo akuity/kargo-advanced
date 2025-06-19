@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-service
+spec:
+  selector:
+    app: api-service
+  ports:
+  - protocol: TCP
+    port: 8080 # Port the service will be available on within the cluster
+    targetPort: 8080 # Port the container is listening on
+  type: ClusterIP

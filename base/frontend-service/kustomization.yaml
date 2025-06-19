@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- deployment.yaml
+- service.yaml
+
+# Common labels for all resources defined in this kustomization
+commonLabels:
+  app.kubernetes.io/name: frontend-service
+  app.kubernetes.io/part-of: guestbook-app # Assuming a common app group name
+  # app.kubernetes.io/version will be set by Kargo via image tag

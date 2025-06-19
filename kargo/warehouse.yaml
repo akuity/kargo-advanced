@@ -1,14 +1,55 @@
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Warehouse
 metadata:
-  name: guestbook
+  name: guestbook # Keep the same warehouse name, but it now handles more
   namespace: kargo-advanced
 spec:
   subscriptions:
-  - image:
-      repoURL: ghcr.io/akuity/guestbook
+  - image: # Original guestbook, will be replaced by frontend-service effectively
+      repoURL: ghcr.io/alkimake/guestbook # This will be updated by personalize.sh
       imageSelectionStrategy: SemVer
+      allowTags: ^v?[0-9]+\.[0-9]+\.[0-9]+([\+-].*)?$ # Standard SemVer
+  - image:
+      name: frontend-service # Explicit name for this subscription
+      repoURL: ghcr.io/alkimake/frontend-service # Placeholder, updated by personalize.sh
+      imageSelectionStrategy: SemVer # For staging/prod
+      allowTags: ^v?[0-9]+\.[0-9]+\.[0-9]+([\+-].*)?$
+      # To support "latest" for dev, we add another rule or use a different strategy for dev stage.
+      # For now, let's assume dev can also consume SemVer tags initially for simplicity,
+      # or that dev-specific tags will also match a lenient SemVer if needed.
+      # A more robust way for dev "latest" would be a separate subscription with:
+      # imageSelectionStrategy: NewestBuild (if tags are sortable like build numbers/timestamps)
+      # or imageSelectionStrategy: Regex with a pattern like ^dev-.*
+  - image:
+      name: api-service # Explicit name for this subscription
+      repoURL: ghcr.io/alkimake/api-service # Placeholder, updated by personalize.sh
+      imageSelectionStrategy: SemVer # For staging/prod
       allowTags: ^v?[0-9]+\.[0-9]+\.[0-9]+([\+-].*)?$
   - git:
-      repoURL: https://github.com/akuity/kargo-advanced.git
+      repoURL: https://github.com/alkimake/kargo-advanced.git # Updated by personalize.sh
       branch: main
+      # Kargo Render will use this Git commit for manifest changes.
+      # Health checks on this subscription can ensure Kargo only processes valid commits.
+      healthChecks:
+      - name: "Git files exist"
+        type: "git-files-exist"
+        args:
+        - "base/kustomization.yaml"
+        - "env/dev/kustomization.yaml"
+        - "env/staging/kustomization.yaml"
+        - "env/prod/kustomization.yaml"
+        timeoutSeconds: 60
+
+# Note on dev image strategy:
+# The request is "dev env should use image automation to deploy latest versions of the images and deploy with iteration".
+# The current SemVer strategy for frontend-service and api-service doesn't directly enable deploying "latest" non-SemVer images (e.g., dev-sha-xxxx).
+# To achieve this, we would typically:
+# 1. Add another image subscription for each service specifically for dev tags:
+#    - image:
+#        name: frontend-service-dev
+#        repoURL: ghcr.io/alkimake/frontend-service
+#        imageSelectionStrategy: Regex
+#        allowTags: ^dev-\w{7}$ # Example: dev-commitsha
+# 2. The 'dev' Stage would then subscribe to Freight containing these 'dev' images.
+# For this iteration, we'll keep it simpler and assume dev might consume SemVer tags or specially crafted dev tags that fit SemVer-like patterns if needed.
+# The `personalize.sh` script will replace `alkimake` with the user's GitHub username.

@@ -6,7 +6,7 @@ metadata:
 spec:
   generators:
   - git:
-      repoURL: https://github.com/akuity/kargo-advanced.git
+      repoURL: https://github.com/alkimake/kargo-advanced.git
       revision: HEAD
       directories:
       - path: env/*
@@ -19,10 +19,10 @@ spec:
       destination:
         namespace: guestbook-{{path.basename}}
         # Specify either a cluster destination name or server address:
-        # name: REPLACEME
+        name: in-cluster
         # server: https://REPLACEME
       project: guestbook
       source:
         path: ./
-        repoURL: https://github.com/akuity/kargo-advanced.git
+        repoURL: https://github.com/alkimake/kargo-advanced.git
         targetRevision: env/{{path.basename}}

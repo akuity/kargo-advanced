@@ -5,3 +5,40 @@ resources:
 - ../../base
 
 namespace: guestbook-staging
+
+patches:
+- patch: |-
+    - op: replace
+      path: /metadata/name
+      value: guestbook-staging
+  target:
+    kind: Namespace
+    name: guestbook-placeholder
+
+images:
+  - name: ghcr.io/alkimake/frontend-service
+    newName: ghcr.io/alkimake/frontend-service # personalize.sh will change 'alkimake'
+    newTag: staging-initial # Placeholder, Kargo will manage this
+  - name: ghcr.io/alkimake/api-service
+    newName: ghcr.io/alkimake/api-service # personalize.sh will change 'alkimake'
+    newTag: staging-initial # Placeholder, Kargo will manage this
+  - name: ghcr.io/alkimake/guestbook
+    newName: ghcr.io/alkimake/guestbook
+    newTag: staging-initial
+
+# Example: Staging might have slightly different replica counts or configs
+# patchesStrategicMerge:
+# - |-
+#   apiVersion: apps/v1
+#   kind: Deployment
+#   metadata:
+#     name: frontend-service
+#   spec:
+#     replicas: 2
+# - |-
+#   apiVersion: apps/v1
+#   kind: Deployment
+#   metadata:
+#     name: api-service
+#   spec:
+#     replicas: 2

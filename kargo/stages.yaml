@@ -4,19 +4,33 @@ metadata:
   name: dev
   namespace: kargo-advanced
   annotations:
-    kargo.akuity.io/color: red
+    kargo.akuity.io/color: "red"
 spec:
-  requestedFreight:
-  - origin:
-      kind: Warehouse
-      name: guestbook
-    sources:
-      direct: true
-  promotionTemplate:
-    spec:
-      steps:
-      - task:
-          name: promote
+  subscriptions:
+    warehouse: guestbook # Subscribes to the Warehouse we defined
+  promotionMechanisms:
+    gitRepoUpdates: # Uses Kargo Render to update Kustomize files in Git
+    - repoURL: https://github.com/alkimake/kargo-advanced.git # Will be personalized
+      writeBranch: env/dev
+      kustomize:
+        images:
+          # Path to image update in kustomization.yaml
+          # For each service, specify how its image should be updated.
+          # The key is the Kustomize image name (often same as manifest), value is image name from Warehouse.
+          - image: ghcr.io/alkimake/frontend-service # This key should match what's in Kustomize files
+            name: frontend-service # Name of the image source in Warehouse Freight
+          - image: ghcr.io/alkimake/api-service
+            name: api-service
+          # Keep guestbook for now if it's still in base, remove when fully transitioned
+          - image: ghcr.io/alkimake/guestbook
+            name: ghcr.io/alkimake/guestbook # Default name if not specified in Warehouse sub
+    autoPromotionEnabled: true # Auto-promote newest Freight to dev
+  verification:
+    # Optional: Add verification steps for dev if needed
+    # For example, simple health checks after deployment
+    analysisTemplates:
+    - name: basic-health-check # Assuming a simple, generic health check AnalysisTemplate exists
+    args: [] # Add args like service name, namespace if needed
 
 ---
 apiVersion: kargo.akuity.io/v1alpha1
@@ -25,76 +39,30 @@ metadata:
   name: staging
   namespace: kargo-advanced
   annotations:
-    kargo.akuity.io/color: amber
+    kargo.akuity.io/color: "amber"
 spec:
-  requestedFreight:
-  - origin:
-      kind: Warehouse
-      name: guestbook
-    sources:
-      stages:
-      - dev
-  promotionTemplate:
-    spec:
-      steps:
-      - task:
-          name: promote
-
----
-apiVersion: kargo.akuity.io/v1alpha1
-kind: Stage
-metadata:
-  name: ab-test-a
-  namespace: kargo-advanced
-  annotations:
-    kargo.akuity.io/color: yellow
-spec:
-  requestedFreight:
-  - origin:
-      kind: Warehouse
-      name: guestbook
-    sources:
-      stages:
-      - staging
-  promotionTemplate:
-    spec:
-      steps:
-      - task:
-          name: promote
+  subscriptions:
+    stages: # Subscribes to Freight verified in the dev Stage
+    - name: dev
+  promotionMechanisms:
+    gitRepoUpdates:
+    - repoURL: https://github.com/alkimake/kargo-advanced.git # Will be personalized
+      writeBranch: env/staging
+      kustomize:
+        images:
+          - image: ghcr.io/alkimake/frontend-service
+            name: frontend-service
+          - image: ghcr.io/alkimake/api-service
+            name: api-service
+          - image: ghcr.io/alkimake/guestbook
+            name: ghcr.io/alkimake/guestbook
+    autoPromotionEnabled: true # Auto-promote verified Freight from dev to staging
   verification:
+    # Optional: Add more comprehensive verification for staging
     analysisTemplates:
-    - name: pokemon-xp
-    args:
-    - name: pokemon
-      value: pikachu
----
-apiVersion: kargo.akuity.io/v1alpha1
-kind: Stage
-metadata:
-  name: ab-test-b
-  namespace: kargo-advanced
-  annotations:
-    kargo.akuity.io/color: green
-spec:
-  requestedFreight:
-  - origin:
-      kind: Warehouse
-      name: guestbook
-    sources:
-      stages:
-      - staging
-  promotionTemplate:
-    spec:
-      steps:
-      - task:
-          name: promote
+    - name: comprehensive-tests # Assuming a more thorough AnalysisTemplate exists
+    args: []
 
-  verification:
-    analysisTemplates:
-    - name: pokemon-xp
-    args:
-    - name: pokemon
-      value: charizard
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -102,78 +70,43 @@ metadata:
   name: prod
   namespace: kargo-advanced
   annotations:
-    kargo.akuity.io/color: blue
+    kargo.akuity.io/color: "blue"
 spec:
-  requestedFreight:
-  - origin:
-      kind: Warehouse
-      name: guestbook
-    sources:
-      stages:
-      - ab-test-a
-      - ab-test-b
----
-apiVersion: kargo.akuity.io/v1alpha1
-kind: Stage
-metadata:
-  name: prod-west
-  namespace: kargo-advanced
-  annotations:
-    kargo.akuity.io/color: violet
-spec:
-  requestedFreight:
-  - origin:
-      kind: Warehouse
-      name: guestbook
-    sources:
-      stages:
-      - prod
-  promotionTemplate:
-    spec:
-      steps:
-      - task:
-          name: promote
+  subscriptions:
+    stages: # Subscribes to Freight verified in the staging Stage
+    - name: staging
+  promotionMechanisms:
+    gitRepoUpdates:
+    - repoURL: https://github.com/alkimake/kargo-advanced.git # Will be personalized
+      writeBranch: env/prod
+      kustomize:
+        images:
+          - image: ghcr.io/alkimake/frontend-service
+            name: frontend-service
+          - image: ghcr.io/alkimake/api-service
+            name: api-service
+          - image: ghcr.io/alkimake/guestbook
+            name: ghcr.io/alkimake/guestbook
+    autoPromotionEnabled: false # Production promotions are manual
+  # Verification in prod is also highly recommended
+  verification:
+    analysisTemplates:
+    - name: production-smoke-tests
+    args: []
 
----
-apiVersion: kargo.akuity.io/v1alpha1
-kind: Stage
-metadata:
-  name: prod-central
-  namespace: kargo-advanced
-  annotations:
-    kargo.akuity.io/color: violet
-spec:
-  requestedFreight:
-  - origin:
-      kind: Warehouse
-      name: guestbook
-    sources:
-      stages:
-      - prod
-  promotionTemplate:
-    spec:
-      steps:
-      - task:
-          name: promote
-
----
-apiVersion: kargo.akuity.io/v1alpha1
-kind: Stage
-metadata:
-  name: prod-east
-  namespace: kargo-advanced
-  annotations:
-    kargo.akuity.io/color: violet
-spec:
-  requestedFreight:
-  - origin:
-      kind: Warehouse
-      name: guestbook
-    sources:
-      stages:
-      - prod
-  promotionTemplate:
-    spec:
-      steps:
-      - task:
-          name: promote
+# Note: The `image:` key under `kustomize.images` must match the image name
+# used in the Kustomization files (e.g., what `kustomize edit set image` would target).
+# The `name:` key under `kustomize.images` must match the `name` of the image
+# subscription in the Warehouse (if specified) or the full `repoURL` of the image
+# from the Warehouse if the subscription `name` is not set.
+# The `personalize.sh` script needs to be aware of these new image repoURLs to update them.
+# For the dev stage to pick "latest dev images" that are not SemVer, the Warehouse subscription
+# for frontend-service and api-service would need an additional entry with a different
+# imageSelectionStrategy (e.g., Regex for dev-* tags) and the dev Stage's subscription
+# would need to specify which named image source to use (e.g., `imageSource: frontend-service-dev-subscription`).
+# For now, this setup assumes dev also consumes SemVer tags or tags that happen to be parsable by SemVer logic.
+# The original guestbook image is kept in promotions for now for smoother transition.
+# It can be removed once frontend-service fully replaces its functionality and Kustomize files are updated.
+# The `promotionTemplate` spec from the original stages.yaml is removed as it's deprecated in newer Kargo versions
+# in favor of `promotionMechanisms` and `verification`.
+# Placeholder AnalysisTemplate names are used (basic-health-check, etc.). These would need to be created in the cluster.
